@@ -1,4 +1,4 @@
-(function() {
+(function(DOM, document) {
   'use strict';
 
   /*
@@ -36,4 +36,74 @@
   que será nomeado de "app".
   */
 
+var app = (function() {
+  return {
+    init: function() {
+      this.companyInfo();
+      this.initEvents();
+     },
+
+     initEvents: function initEvents() {
+      DOM('[data-js="form-register"]').on('submit', this.handleSubmit);
+     },
+
+     handleSubmit: function handleSubmit(event) {
+        event.preventDefault();
+        var $tableCar = DOM('[data-js="table-car"]').get();
+        $tableCar.appendChild(app.createNewCar());
+     },
+
+     createNewCar: function createNewCar() {
+        var $fragment = document.createDocumentFragment();
+        var $tr = document.createElement('tr');
+        var $tdImage = document.createElement('td');
+        var $tdModel = document.createElement('td');
+        var $tdYear = document.createElement('td');
+        var $tdPlate = document.createElement('td');
+        var $tdColor = document.createElement('td');
+        var $image = document.createElement('img');
+
+        $image.setAttribute('src', DOM('[data-js="image"]').get().value);
+        $tdImage.appendChild($image);
+
+        $tdModel.textContent = DOM('[data-js="model"]').get().value;
+        $tdYear.textContent = DOM('[data-js="year"]').get().value;
+        $tdPlate.textContent = DOM('[data-js="plate"]').get().value;
+        $tdColor.textContent = DOM('[data-js="color"]').get().value;
+
+        $tr.appendChild($tdImage);
+        $tr.appendChild($tdModel);
+        $tr.appendChild($tdYear);
+        $tr.appendChild($tdPlate);
+        $tr.appendChild($tdColor);
+
+        return $fragment.appendChild($tr);
+     },
+
+     companyInfo: function companyInfo() {
+      var ajax = new XMLHttpRequest();
+      ajax.open('GET', 'company.json', true);
+      ajax.send();
+      ajax.addEventListener('readystatechange', this.getCompanyInfo, false);
+     },
+
+     getCompanyInfo: function getCompanyInfo() {
+       if ( !app.isRequestOk.call(this) ) {
+        return
+       }
+       var data = JSON.parse(this.responseText);
+       var $companyName = new DOM('[data-js="companyName"]').get();
+       var $companyPhone = new DOM('[data-js="companyPhone"]').get();
+       $companyName.textContent = data.name;
+       $companyPhone.textContent = data.phone;
+     },
+
+     isRequestOk: function isRequestOk() {
+      return this.readyState === 4 && this.status === 200
+    }
+  }
 })();
+
+app.init();
+
+})(window.DOM, document);
